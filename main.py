@@ -25,6 +25,8 @@ class User(BaseModel):
 
 active_sockets = []
 
+# hehe
+
 
 async def handle_client(reader, writer):
     addr = writer.get_extra_info('peername')
