@@ -1,11 +1,13 @@
 import os
 import sys
-from fastapi import FastAPI
+import uvicorn
+from fastapi import FastAPI, BackgroundTasks
 from typing import Optional, List, Dict, Set, Tuple, Union, Any, Literal, Text
 from pydantic import BaseModel  # Models to specify the data types.
 from datetime import datetime
 import socket
 import asyncio
+
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(project_root)
@@ -21,54 +23,44 @@ class User(BaseModel):
     password: str
 
 
-async def receive_new_socket():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = "localhost"
-    port = 12345
-    server_socket.bind((host, port))
-    server_socket.listen()
-    print(host, port)
-    print("Server is listening for connections...")
-    client_socket, addr = server_socket.accept()
+active_sockets = []
+
+
+async def handle_client(reader, writer):
+    addr = writer.get_extra_info('peername')
+    print('reader', reader)
+    print('writer', writer)
     print("Connection established with:", str(addr))
 
     while True:
-        try:
-            client_socket, addr = server_socket.accept()
-            print("Connection established with:", str(addr))
-
-            while True:
-                data = client_socket.recv(4096).decode()
-                print("From user:", str(data))
-                client_socket.send(data.encode())
-        except Exception as e:
-            server_socket.close()
-            print("Connection closed:", str(e))
-            client_socket.close()
+        data = await reader.read(4096)
+        if not data:
+            print('NO DATA RECEIVED')
             break
+        data = data.decode('utf-8')
+        print('DATAAAAAA ', data)
+        print(f"From user {str(addr)}:", str(data))
+        writer.write(data.encode('utf-8'))
+        await writer.drain()
+
+    print("Connection closed:", str(addr))
+    writer.close()
 
 
-async def run_socket_server():
-    while True:
-        await receive_new_socket()
+@app.on_event("startup")
+async def main():
+    host = "localhost"
+    port = 12345
+    server = await asyncio.start_server(handle_client, host, port)
+    async with server:
+        print("Server is listening for connections...")
+        await server.serve_forever()
 
 
 @app.get("/")
 async def root():
-    await run_socket_server()
-    # return {"greeting": "Hello, World!", "message": "Welcome to FastAPI!"}
+    return {"message": "Hello, World!"}
 
-
-# @app.post("/login")
-# async def login(user, password) -> bool:
-#     is_valid = False
-#     print(user, password, end=" ")
-#     print('is valid?', is_valid)
-#     is_valid = login(user, password)
-#     print('is vlaid?', is_valid,)
-#     return is_valid
-
-
-# @app.post("/register")
-# async def register():
-#     return {"greeting": "Hello, World!", "message": "Welcome to FastAPI!"}
+if __name__ == "__main__":
+    asyncio.run(main())
+    uvicorn.run(app, host="0.0.0.0", port=8000)
