@@ -1,4 +1,11 @@
+uvicorn==0.23.2
 fastapi==0.100.0
 hypercorn==0.14.4
 mysql.connector-python==8.1.0
 requests
+SQLAlchemy==2.0.20
+PyMySQL==1.1.0
+python-decouple==3.8
+python-dotenv==1.0.0
+cryptography
+python-multipart
