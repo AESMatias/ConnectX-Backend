@@ -4,15 +4,13 @@ import uvicorn
 
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from fastapi import FastAPI, BackgroundTasks
-from routes.uploadfiles  import uploadfiles
+from routes.uploadfiles import uploadfiles
 from routes.user import user
 from typing import Optional, List, Dict, Set, Tuple, Union, Any, Literal, Text
 from pydantic import BaseModel  # Models to specify the data types.
 from datetime import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
-
 
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -90,14 +88,17 @@ async def handle_client(reader, writer):
         writer.close()
         active_sockets.remove(writer)
 
+
 def start_server(host, port):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    server = loop.run_until_complete(asyncio.start_server(handle_client, host, port))
+    server = loop.run_until_complete(
+        asyncio.start_server(handle_client, host, port))
     try:
         loop.run_until_complete(server.serve_forever())
     except KeyboardInterrupt:
         pass
+
 
 @app.on_event("startup")
 async def main():
@@ -111,11 +112,14 @@ async def main():
 async def root():
     return {"message": "Hola mi amor, estas programando solo, Enserio?!"}
 
+
 def run_uvicorn():
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
+
 def run_asyncio():
     asyncio.run(main())
+
 
 if __name__ == "__main__":
     with ThreadPoolExecutor() as executor:
