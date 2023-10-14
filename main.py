@@ -1,11 +1,11 @@
 import os
 import sys
 import uvicorn
-
+from starlette.responses import RedirectResponse
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from fastapi import FastAPI, BackgroundTasks
-from routes.uploadfiles  import uploadfiles
-from routes.user import user
+from app.routes.uploadfiles  import files
+from app.routes.user import user
 from typing import Optional, List, Dict, Set, Tuple, Union, Any, Literal, Text
 from pydantic import BaseModel  # Models to specify the data types.
 from datetime import datetime
@@ -21,7 +21,7 @@ print(project_root)
 
 app = FastAPI()
 app.include_router(user)
-app.include_router(uploadfiles)
+app.include_router(files)
 # This is a model for the user, contains all the information needed for login.
 
 
@@ -109,7 +109,7 @@ async def main():
 
 @app.get("/")
 async def root():
-    return {"message": "Hola mi amor, estas programando solo, Enserio?!"}
+    return RedirectResponse(url="/docs/")
 
 def run_uvicorn():
     uvicorn.run(app, host="0.0.0.0", port=8000)
