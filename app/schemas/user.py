@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -7,11 +7,17 @@ class User(BaseModel):
     username: str
     password: str
     created_at: Optional[datetime] = datetime.now()
-    state: int
+    disabled: bool | None = None
 
     class Config:
         orm_mode = True
 
+class SchemaLogin(BaseModel):
+    username: str
+    password: str
+
+    class Config:
+        orm_mode = True
 
 class UserNameUpdate(BaseModel):
     username: str
@@ -33,3 +39,4 @@ class UserID(BaseModel):
 
 class Response(BaseModel):
     mensage: str
+

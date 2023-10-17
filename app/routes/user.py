@@ -5,22 +5,16 @@ from app.schemas.user import UserNameUpdate as SchemaUserUpdate
 from app.schemas.user import UserPasswordUpdate as SchemaUserPassUpdate
 from app.schemas.user import Response as SchemaResponse
 from app.schemas.user import UserID as SchemaUserID
+from app.schemas.user import SchemaLogin
 from typing import List
 from cryptography.fernet import Fernet
 from sqlalchemy.orm import Session
 from app.config.db import get_db
-import os
+from app.routes.auth import get_password_hash
+from app.routes.auth import get_user_by_name
 
 user = APIRouter()
 
-if not os.path.exists("secret.key"):
-    key = Fernet.generate_key()
-    with open("secret.key", "wb") as key_file:
-        key_file.write(key)
-else:
-    with open("secret.key", "rb") as key_file:
-        key = key_file.read()
-fpass = Fernet(key)
 
 @user.get("/users", response_model= List[SchemaUser])
 def show_users(db:Session=Depends(get_db)):
@@ -33,13 +27,20 @@ def getId(user_name:str,db:Session=Depends(get_db)):
     return user
 
 
+@user.get("/user/{user_name}", response_model= SchemaUser)
+def get_user(user_name:str,db:Session=Depends(get_db)):
+    return get_user_by_name(user_name, db)
+
 @user.post("/user", response_model= SchemaUser)
 def created_users(entry:SchemaUser,db:Session=Depends(get_db)):
-    user = ModelUser(username = entry.username, password = entry.password, state = entry.state, created_at = entry.created_at)
+    passwordhash = get_password_hash(entry.password)
+    user = ModelUser(username = entry.username, password = passwordhash, disabled = False, created_at = entry.created_at)
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
+
+
 
 @user.put("/user/pass/{user_id}", response_model= SchemaUser)
 def update_pass(user_id: int, entry:SchemaUserPassUpdate,db:Session=Depends(get_db)):
