@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, LargeBinary
+from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, LargeBinary, Boolean
 from sqlalchemy.orm import relationship
 from app.config.db import Base , engine
 
@@ -7,9 +7,9 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(20), unique=True, index=True)
-    password = Column(String(20))
+    password = Column(String(255))
     created_at = Column(DateTime)
-    state = Column(Integer)
+    disabled = Column(Boolean)
 
 class UserFile(Base):
     __tablename__ = 'user_files'
@@ -21,17 +21,6 @@ class UserFile(Base):
     user = relationship("User", back_populates="user_files")
 
 User.user_files = relationship("UserFile", back_populates="user")
-
-
-
-
-
-
-
-
-
-
-
 
 
 

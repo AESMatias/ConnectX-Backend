@@ -6,6 +6,7 @@ from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThr
 from fastapi import FastAPI, BackgroundTasks
 from app.routes.uploadfiles import files
 from app.routes.user import user
+from app.routes.auth import auth
 from typing import Optional, List, Dict, Set, Tuple, Union, Any, Literal, Text
 from pydantic import BaseModel  # Models to specify the data types.
 from datetime import datetime
@@ -20,6 +21,7 @@ print(project_root)
 app = FastAPI()
 app.include_router(user)
 app.include_router(files)
+app.include_router(auth)
 # This is a model for the user, contains all the information needed for login.
 
 
