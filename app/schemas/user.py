@@ -40,3 +40,14 @@ class UserID(BaseModel):
 class Response(BaseModel):
     mensage: str
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None
+
+
+class UserInDB(User):
+    password: str
