@@ -8,15 +8,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.models.user import User as ModelUser
 from app.config.db import SessionLocal
+from app.schemas.user import Token
+from app.schemas.user import TokenData
+from app.schemas.user import User
+from app.schemas.user import UserInDB
 
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 def get_user_by_name(user_name:str, db:Session):
     user = db.query(ModelUser).filter_by(username= user_name).first()
     if not user:
@@ -26,27 +23,6 @@ def get_user_by_name(user_name:str, db:Session):
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    username: str | None = None
-
-
-class User(BaseModel):
-    id: Optional[int] = None
-    username: str
-    created_at: Optional[datetime] | None = None
-    disabled: bool | None = None
-
-    class Config:
-        orm_mode = True
-
-class UserInDB(User):
-    password: str
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

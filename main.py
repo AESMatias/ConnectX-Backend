@@ -19,9 +19,11 @@ sys.path.append(project_root)
 print(project_root)
 
 app = FastAPI()
-app.include_router(user)
-app.include_router(files)
 app.include_router(auth)
+app.include_router(files)
+app.include_router(user)
+
+
 # This is a model for the user, contains all the information needed for login.
 
 
