@@ -9,19 +9,19 @@ class User(Base):
     username = Column(String(20), unique=True, index=True)
     password = Column(String(255))
     created_at = Column(DateTime)
+    updated_at = Column(DateTime)
     disabled = Column(Boolean)
 
-class UserFile(Base):
-    __tablename__ = 'user_files'
+class ProfileImage(Base):
+    __tablename__ = 'profile_images'
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    file = Column(LargeBinary)
-    created_at = Column(DateTime)
+    image = Column(LargeBinary(length=4000000000))
+    upload_at = Column(DateTime)
 
-    user = relationship("User", back_populates="user_files")
+    user = relationship("User", back_populates="profile_images")
 
-User.user_files = relationship("UserFile", back_populates="user")
-
+User.profile_images = relationship("ProfileImage", back_populates="user")
 
 
 

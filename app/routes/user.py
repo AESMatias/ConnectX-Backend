@@ -1,17 +1,15 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends
 from app.models.user import User as ModelUser
 from app.schemas.user import User as SchemaUser
 from app.schemas.user import UserNameUpdate as SchemaUserUpdate
 from app.schemas.user import UserPasswordUpdate as SchemaUserPassUpdate
 from app.schemas.user import Response as SchemaResponse
 from app.schemas.user import UserID as SchemaUserID
-from app.schemas.user import SchemaLogin
 from typing import List
-from cryptography.fernet import Fernet
 from sqlalchemy.orm import Session
 from app.config.db import get_db
-from app.routes.auth import get_password_hash
-from app.routes.auth import get_user_by_name
+from app.utils.auth import get_password_hash
+from app.utils.auth import get_user_by_name
 
 user = APIRouter()
 
