@@ -4,7 +4,7 @@ import uvicorn
 from starlette.responses import RedirectResponse
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from fastapi import FastAPI, BackgroundTasks
-from app.routes.uploadfiles import files
+from app.routes.images import images
 from app.routes.user import user
 from app.routes.auth import auth
 from typing import Optional, List, Dict, Set, Tuple, Union, Any, Literal, Text
@@ -20,7 +20,7 @@ print(project_root)
 
 app = FastAPI()
 app.include_router(auth)
-app.include_router(files)
+app.include_router(images)
 app.include_router(user)
 
 
