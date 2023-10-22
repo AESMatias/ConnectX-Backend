@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.user import User as ModelUser
-from app.models.user import UserAccountLogs as ModelAccountLogs
 from app.schemas.user import User as SchemaUser
 from app.schemas.user import Response as SchemaResponse
 from sqlalchemy.orm import Session
 from app.config.db import get_db
 from app.utils.auth import get_current_user
+from app.utils.logs import log_action_user
 from typing import List
-from datetime import datetime
+
+
 admin = APIRouter()
 
 
@@ -17,15 +18,7 @@ def show_users(current_user: ModelUser = Depends(get_current_user),
                ):
     if current_user.admin:
         users = db.query(ModelUser).all()
-        data_time = datetime.now()
-        log = ModelAccountLogs(user_id=current_user.id, log="Show All Users", log_at=data_time)
-        db.add(log)
-        db.commit()
-        db.refresh(log)
-        user = db.query(ModelUser).filter_by(username=current_user.username).first()
-        user.updated_at = data_time
-        db.commit()
-        db.refresh(user)
+        log_action_user(action=f"Show All Users by {current_user.username}", user_name=current_user.username)
         return users
     else:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -39,15 +32,7 @@ def range_any_user(user_name: str, db:Session=Depends(get_db), current_user: Mod
             user.admin = True
             db.commit()
             response = SchemaResponse(mensage="User promoted")
-            data_time = datetime.now()
-            log = ModelAccountLogs(user_id=current_user.id, log=f"Promoted {user_name} by {current_user.username}", log_at=data_time)
-            db.add(log)
-            db.commit()
-            db.refresh(log)
-            user = db.query(ModelUser).filter_by(username=current_user.username).first()
-            user.updated_at = data_time
-            db.commit()
-            db.refresh(user)
+            log_action_user(action=f"Promote {user_name} to admin by {current_user.username}", user_name=current_user.username)
             return response
         else:
             raise HTTPException(status_code=404, detail="User not found")
@@ -61,16 +46,8 @@ def ban_any_user(user_name: str, db:Session=Depends(get_db), current_user: Model
         if user:
             user.banned = True
             db.commit()
-            response = SchemaResponse(mensage="User banned")
-            data_time = datetime.now()
-            log = ModelAccountLogs(user_id=current_user.id, log=f"Ban {user_name} by {current_user.username}", log_at=data_time)
-            db.add(log)
-            db.commit()
-            db.refresh(log)
-            user = db.query(ModelUser).filter_by(username=current_user.username).first()
-            user.updated_at = data_time
-            db.commit()
-            db.refresh(user)
+            response = SchemaResponse(mensage=f"User {user.username} banned by {current_user.username}")
+            log_action_user(action=f"Ban {user_name}", user_name=current_user.username)
             return response
         else:
             raise HTTPException(status_code=404, detail="User not found")
@@ -85,15 +62,7 @@ def unban_any_user(user_name: str, db:Session=Depends(get_db), current_user: Mod
             user.banned = False
             db.commit()
             response = SchemaResponse(mensage="User unbanned")
-            data_time = datetime.now()
-            log = ModelAccountLogs(user_id=current_user.id, log=f"Unban {user_name} by {current_user.username}", log_at=data_time)
-            db.add(log)
-            db.commit()
-            db.refresh(log)
-            user = db.query(ModelUser).filter_by(username=current_user.username).first()
-            user.updated_at = data_time
-            db.commit()
-            db.refresh(user)
+            log_action_user(action=f"User {user.username} unbanned by {current_user.username}", user_name=current_user.username)
             return response
         else:
             raise HTTPException(status_code=404, detail="User not found")
@@ -108,15 +77,7 @@ def delete_any_user(user_name: str, db:Session=Depends(get_db), current_user: Mo
             user.disabled = True
             db.commit()
             response = SchemaResponse(mensage="User deleted")
-            data_time = datetime.now()
-            log = ModelAccountLogs(user_id=current_user.id, log=f"Disable {user_name} account by {current_user.username}", log_at=data_time)
-            db.add(log)
-            db.commit()
-            db.refresh(log)
-            user = db.query(ModelUser).filter_by(username=current_user.username).first()
-            user.updated_at = data_time
-            db.commit()
-            db.refresh(user)
+            log_action_user(action=f"Disable {user_name} account by {current_user.username}", user_name=current_user.username)
             return response
         else:
             raise HTTPException(status_code=404, detail="User not found")

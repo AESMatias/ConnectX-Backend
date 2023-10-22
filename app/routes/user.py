@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from app.models.user import User as ModelUser
 from app.models.user import ProfileImage as DBProfileImage
-from app.models.user import UserAccountLogs as ModelAccountLogs
 from app.schemas.user import User as SchemaUser
 from app.schemas.user import UserNameUpdate as SchemaUserUpdate
 from app.schemas.user import UserPasswordUpdate as SchemaUserPassUpdate
@@ -13,19 +12,21 @@ from app.config.db import get_db
 from app.utils.auth import get_password_hash
 from app.utils.auth import get_user_by_name
 from app.utils.auth import get_current_user
+from app.utils.logs import log_action_user
 from PIL import Image
 from io import BytesIO
 from datetime import datetime
 import os
 
+
 user = APIRouter()
-
-
 
 
 @user.get("/user/{user_name}", response_model= SchemaUser, tags=["self"])
 def get_user(user_name: str, db: Session = Depends(get_db), current_user: ModelUser = Depends(get_current_user)):
     if current_user.admin:
+        return get_user_by_name(user_name, db)
+    elif current_user.username == user_name:
         return get_user_by_name(user_name, db)
     else:
         raise HTTPException(status_code=403, detail="Not enough permissions")
@@ -43,6 +44,7 @@ async def profile_pic(
     except FileExistsError:
         pass
     image.save(f"Data/profile_pics/{current_user.username}/{current_user.username}.png", "PNG")
+    log_action_user(action=f"User {current_user.username} get profile picture", user_name=current_user.username)
     return FileResponse(f"Data/profile_pics/{current_user.username}/{current_user.username}.png")
 
 
@@ -71,15 +73,7 @@ async def create_upload_file(
     profile_image = DBProfileImage(user_id=user_id, image=blob_data, upload_at=data_time)
     db.add(profile_image)
     db.commit()
-    log = ModelAccountLogs(user_id=user_id, log=f"User uploaded a profile picture", log_at=data_time)
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=current_user.username).first()
-    user.updated_at = data_time
-    db.commit()
-    db.refresh(user)
+    log_action_user(action=f"User {current_user.username} uploaded a profile picture", user_name=current_user.username)
     return FileResponse (f"Data/profile_pics/{current_user.username}/RAW/{user_id}-{user_name}-{current_time}.png")
 
 
@@ -102,15 +96,7 @@ def created_users(entry:SchemaUser,db:Session=Depends(get_db)):
     db.commit()
     db.refresh(user)
     catch_user = db.query(ModelUser).filter_by(username=entry.username).first()
-    log = ModelAccountLogs(user_id=catch_user.id, log="User created", log_at=datetime.now())
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=catch_user.username).first()
-    user.updated_at = data_time
-    db.commit()
-    db.refresh(user)
+    log_action_user(action=f"User {catch_user.username} created", user_name=catch_user.username)
     response = SchemaResponse(mensage="User Created")
     return response
 
@@ -121,15 +107,7 @@ def update_pass(entry:SchemaUserPassUpdate, db:Session=Depends(get_db), current_
     user.password = password_hashed
     db.commit()
     db.refresh(user)
-    log = ModelAccountLogs(user_id=user.id, log="User updated password", log_at=datetime.now())
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=current_user.username).first()
-    user.updated_at = data_time
-    db.commit()
-    db.refresh(user)
+    log_action_user(action=f"User {user.username} updated password", user_name=user.username)
     response = SchemaResponse(mensage="Password Updated")
     return response
 
@@ -137,16 +115,8 @@ def update_pass(entry:SchemaUserPassUpdate, db:Session=Depends(get_db), current_
 def update_name(entry:SchemaUserUpdate, db:Session=Depends(get_db), current_user: ModelUser = Depends(get_current_user)):
     user = db.query(ModelUser).filter_by(username=current_user.username).first()
     new_name = entry.username
+    log_action_user(action=f"User {user.username} updated name to {new_name}", user_name=user.username)
     user.username = new_name
-    db.commit()
-    log = ModelAccountLogs(user_id=user.id, log="User updated name", log_at=datetime.now())
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    db.refresh(user)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=current_user.username).first()
-    user.updated_at = data_time
     db.commit()
     db.refresh(user)
     response = SchemaResponse(mensage="Relog to see changes")
@@ -158,14 +128,6 @@ def delete_users(db:Session=Depends(get_db), current_user: ModelUser = Depends(g
     user = db.query(ModelUser).filter_by(id=user_id).first()
     user.disabled = True
     db.commit()
-    log = ModelAccountLogs(user_id=user_id, log="User deleted", log_at=datetime.now())
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=current_user.username).first()
-    user.updated_at = data_time
-    db.commit()
-    db.refresh(user)
+    log_action_user(action=f"User {user.username} deleted by self", user_name=user.username)
     response = SchemaResponse(mensage = "Your account pass away")
     return response

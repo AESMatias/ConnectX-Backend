@@ -1,16 +1,17 @@
-from datetime import timedelta
-from typing import Annotated
 from fastapi import Depends, APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from app.utils.auth import authenticate_user
+from app.utils.auth import create_access_token
+from app.utils.auth import get_current_active_user
+from app.utils.logs import log_action_user
 from app.schemas.user import Token
-from app.schemas.user import User   
-from app.utils.auth import authenticate_user, create_access_token, get_current_active_user
-from decouple import config
-from app.models.user import UserAccountLogs as ModelAccountLogs
-from app.models.user import User as ModelUser
+from app.schemas.user import User
 from app.config.db import get_db
 from sqlalchemy.orm import Session
 from datetime import datetime
+from datetime import timedelta
+from typing import Annotated
+from decouple import config
 
 SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
@@ -42,19 +43,8 @@ async def login_for_access_token(
             detail="User banned",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    log = ModelAccountLogs(user_id=user.id, log="User logged in", log_at=datetime.now())
-    db.add(log)
-    db.commit()
-    db.refresh(log)
-    timeout = ModelAccountLogs(user_id=user.id, log="User token timeout", log_at=datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    db.add(timeout)
-    db.commit()
-    db.refresh(timeout)
-    data_time = datetime.now()
-    user = db.query(ModelUser).filter_by(username=form_data.username).first()
-    user.updated_at = data_time
-    db.commit()
-    db.refresh(user)
+    log_action_user(action=f"{form_data.username} Logged In", user_name=form_data.username)
+    log_action_user(action=f"{form_data.username} token timeout {datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}", user_name=user.username)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
