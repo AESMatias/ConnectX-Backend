@@ -7,7 +7,10 @@ class User(BaseModel):
     username: str
     password: str
     created_at: Optional[datetime] = datetime.now()
-    disabled: bool | None = None
+    updated_at: Optional[datetime] = datetime.now()
+    admin: bool | None = False
+    banned: bool | None = False
+    disabled: bool | None = False
 
     class Config:
         orm_mode = True

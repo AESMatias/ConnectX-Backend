@@ -1,9 +1,9 @@
 ---
 title: FastAPI
-description: A FastAPI server
+description: A Motherfucker FastAPI server
 tags:
   - fastapi
-  - hypercorn
+  - uvicorn
   - python
 ---
 
@@ -15,13 +15,12 @@ This example starts up a [FastAPI](https://fastapi.tiangolo.com/) server.
 ## ✨ Features
 
 - FastAPI
-- [Hypercorn](https://hypercorn.readthedocs.io/)
 - Python 3
 
 ## 💁‍♀️ How to use
 
 - Clone locally and install packages with pip using `pip install -r requirements.txt`
-- Run locally using `hypercorn main:app --reload`
+- Run `main.py`
 
 ## 📝 Notes
 
