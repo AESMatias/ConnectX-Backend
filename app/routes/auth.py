@@ -5,17 +5,23 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.schemas.user import Token
 from app.schemas.user import User   
 from app.utils.auth import authenticate_user, create_access_token, get_current_active_user
+from decouple import config
+from app.models.user import UserAccountLogs as ModelAccountLogs
+from app.models.user import User as ModelUser
+from app.config.db import get_db
+from sqlalchemy.orm import Session
+from datetime import datetime
 
-
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = config('SECRET_KEY')
+ALGORITHM = config('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int)
 
 auth = APIRouter()
 
-@auth.post("/token", response_model=Token)
+@auth.post("/token", response_model=Token, tags=["auth"])
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db)
 ):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
@@ -24,6 +30,31 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if user.disabled:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User disabled",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if user.banned:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User banned",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    log = ModelAccountLogs(user_id=user.id, log="User logged in", log_at=datetime.now())
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    timeout = ModelAccountLogs(user_id=user.id, log="User token timeout", log_at=datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    db.add(timeout)
+    db.commit()
+    db.refresh(timeout)
+    data_time = datetime.now()
+    user = db.query(ModelUser).filter_by(username=form_data.username).first()
+    user.updated_at = data_time
+    db.commit()
+    db.refresh(user)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
@@ -31,14 +62,14 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@auth.get("/users/me/", response_model=User)
+@auth.get("/users/me/", response_model=User, tags=["auth"])
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     return current_user
 
 
-@auth.get("/users/me/items/")
+@auth.get("/users/me/items/" , tags=["root"])
 async def read_own_items(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
