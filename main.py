@@ -118,7 +118,7 @@ async def root():
 
 
 def run_uvicorn():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
 
 
 def run_asyncio():
