@@ -41,7 +41,7 @@ class UserID(BaseModel):
         orm_mode = True
 
 class Response(BaseModel):
-    mensage: str
+    message: str
 
 class Token(BaseModel):
     access_token: str

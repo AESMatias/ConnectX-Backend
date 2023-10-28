@@ -11,7 +11,7 @@ from app.schemas.user import TokenData
 from app.schemas.user import User
 from app.schemas.user import UserInDB
 from decouple import config
-
+from app.utils.db import user_from_db
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,13 +21,11 @@ SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int)
 
-
 def get_user_by_name(user_name:str, db:Session):
-    user = db.query(ModelUser).filter_by(username= user_name).first()
+    user = user_from_db(user_name, db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-
 
 
 #verify_password
