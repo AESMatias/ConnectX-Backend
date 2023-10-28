@@ -2,7 +2,7 @@ import os
 import sys
 import uvicorn
 from starlette.responses import RedirectResponse
-from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
+#from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool
 from fastapi import FastAPI, BackgroundTasks
 from app.routes.admin import admin
 from app.routes.user import user

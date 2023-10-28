@@ -43,8 +43,8 @@ async def login_for_access_token(
             detail="User banned",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    log_action_user(action=f"{form_data.username} Logged In", user_name=form_data.username)
-    log_action_user(action=f"{form_data.username} token timeout {datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}", user_name=user.username)
+    log_action_user(db=db, action=f"{form_data.username} Logged In", user_name=form_data.username)
+    log_action_user(db=db, action=f"{form_data.username} token timeout {datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)}", user_name=user.username)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
