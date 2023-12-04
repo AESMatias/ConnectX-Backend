@@ -124,7 +124,6 @@ def run_uvicorn():
 def run_asyncio():
     asyncio.run(main())
 
-
 if __name__ == "__main__":
     with ThreadPoolExecutor() as executor:
         executor.submit(run_uvicorn)
