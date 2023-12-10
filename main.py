@@ -41,7 +41,7 @@ async def send_to_all(message, sender) -> None:
             if client_socket != sender:
                 try:
                     client_socket.write(message.encode('utf-8'))
-                    print('MESSAGE LOOPED TO ALL', message)
+                    #print('MESSAGE LOOPED TO ALL', message)
                     await client_socket.drain()
                 except Exception as e:
                     print("Error sending message:", str(e))
@@ -65,8 +65,6 @@ def close_connection(writer, addr) -> bool:
 
 async def handle_client(reader, writer):
     addr = writer.get_extra_info('peername')
-    # print('READER', reader)
-    # print('WRITER', writer)
     print("Connection established with:", str(addr))
     active_sockets.append(writer)
 
