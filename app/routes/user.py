@@ -35,6 +35,25 @@ def get_user(user_name: str, db: Session = Depends(get_db), current_user: ModelU
         return get_user_by_name(user_name, db)
     else:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+@user.get("/user/picture/", tags=["self"])
+async def profile_pic(
+        user_name: str,
+        db: Session = Depends(get_db)
+):
+    current_user = get_user_by_name(user_name, db)
+    profile_image = get_profile_image_by_id(current_user.id, db)
+    image = Image.open(BytesIO(profile_image.image))
+    image.thumbnail((200, 200))
+    try:
+        os.makedirs(f"Data/profile_pics/{current_user.username}")
+    except FileExistsError:
+        pass
+    image.save(f"Data/profile_pics/{current_user.username}/{current_user.username}.png", "PNG")
+    if not log_action_user(db, f"User {current_user.username} get profile picture", user_name=current_user.username):
+        raise HTTPException(status_code=500, detail="Failed to log action")
+    return FileResponse(f"Data/profile_pics/{current_user.username}/{current_user.username}.png")
+
 @user.get("/user/profilePIC/", tags=["self"])
 async def profile_pic(
         current_user: ModelUser = Depends(get_current_user),
