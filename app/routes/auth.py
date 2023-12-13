@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.utils.auth import authenticate_user
 from app.utils.auth import create_access_token
 from app.utils.auth import get_current_active_user
+from app.utils.auth import get_current_user_by_token
 from app.utils.logs import log_action_user
 from app.schemas.user import Token
 from app.schemas.user import User
@@ -50,6 +51,7 @@ async def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 
 @auth.get("/users/me/", response_model=User, tags=["auth"])
