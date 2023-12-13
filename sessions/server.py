@@ -1,15 +1,19 @@
 import asyncio
 from sessions.chat import chatAll
+from decouple import config
+
+
 
 class Server:
+
     def __init__(self):
-        self.host = "localhost"
-        self.port = 12345
+        self.host = config('SOCKETS_HOST')
+        self.port = config('SOCKETS_PORT', cast=int)
         self.active_sockets = []
+
     async def return_to_All(self, message, sender):
         chat = chatAll(self.active_sockets)
         await chat.send_to_all(message, sender)
-
 
     def close_connection(self, writer, addr):
         try:
@@ -25,7 +29,8 @@ class Server:
             print(f"Error closing connection {addr} with Exception:", str(e))
             return False
 
-    async def handle_client(self, reader, writer):  # Make the method asynchronous
+    async def handle_client(self, reader,
+                            writer):  # Make the method asynchronous
         addr = writer.get_extra_info('peername')
         print("Connection established with:", str(addr))
         self.active_sockets.append(writer)
@@ -40,7 +45,8 @@ class Server:
                     print(f'The user {addr} wants to exit', str(addr))
                     has_been_closed = self.close_connection(writer, addr)
                     print('The session has been closed?', has_been_closed)
-                    self.return_to_All(f'The user {addr} has left the chat', writer)
+                    self.return_to_All(f'The user {addr} has left the chat',
+                                       writer)
                     continue
                 data = data.decode('utf-8')
                 print(f"From user {str(addr)}:", str(data))
