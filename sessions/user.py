@@ -1,3 +1,8 @@
+# usuarios_conectados = {
+#     "usuario1": {"writer": True, "reader": True, "jwt": "token123"},
+#     "usuario2": {"writer": False, "reader": True, "jwt": "token456"},
+#     # Otros usuarios...
+# }
 
 
 class User:
