@@ -43,6 +43,8 @@ async def profile_pic(
 ):
     current_user = get_user_by_name(user_name, db)
     profile_image = get_profile_image_by_id(current_user.id, db)
+    if profile_image is None:
+        raise HTTPException(status_code=404, detail="Profile picture not found")
     image = Image.open(BytesIO(profile_image.image))
     image.thumbnail((200, 200))
     try:
@@ -50,7 +52,7 @@ async def profile_pic(
     except FileExistsError:
         pass
     image.save(f"Data/profile_pics/{current_user.username}/{current_user.username}.png", "PNG")
-    if not log_action_user(db, f"User {current_user.username} get profile picture", user_name=current_user.username):
+    if not log_action_user(db, f"generic user get all profile picture", user_name=current_user.username):
         raise HTTPException(status_code=500, detail="Failed to log action")
     return FileResponse(f"Data/profile_pics/{current_user.username}/{current_user.username}.png")
 
@@ -60,6 +62,8 @@ async def profile_pic(
         db: Session = Depends(get_db)
 ):
     profile_image = get_profile_image_by_id(current_user.id, db)
+    if profile_image is None:
+        raise HTTPException(status_code=404, detail="Profile picture not found")
     image = Image.open(BytesIO(profile_image.image))
     image.thumbnail((200, 200))
     try:
