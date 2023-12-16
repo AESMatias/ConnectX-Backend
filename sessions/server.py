@@ -16,9 +16,17 @@ class Server:
         self.active_sockets = []
         self.active_clients_vinculed = {}
 
-    async def return_to_All(self, message, sender):
+    async def generalChat(self, message, sender):
         chat = chatAll(self.active_sockets)
-        await chat.send_to_all(message, sender)
+        await chat.generalChat(message, sender)
+
+    async def peer_to_peer(self, message, sender, destination):
+        chat = chatAll(self.active_sockets)
+        await chat.peer_to_peer(message, sender, destination)
+
+
+        chat = chatAll(self.active_sockets)
+        await chat.peer_to_peer(message, sender, destination)
 
     def close_connection(self, writer, addr):
         try:
@@ -35,40 +43,40 @@ class Server:
             return False
 
 
-    async def authenticate_user(self, token, writer, reader):
+    def authenticate_user(self, token, writer, reader):
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
             self.active_clients_vinculed[writer] = {"user": username, "reader": reader}
-            print(self.active_clients_vinculed)
+            print(len(self.active_clients_vinculed))
         except JWTError as e:
             print("JWT Error:", str(e))
 
     async def handle_client(self, reader, writer):
         addr = writer.get_extra_info('peername')
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMjUwODMzMX0.WP-hIcoms8iujnzZnD0y2kYliV5nMN9BtYXJBZk0fnk"
-
-        print("Connection established with:", str(addr))
         self.active_sockets.append(writer)
-
         try:
-            authentication_task = asyncio.create_task(self.authenticate_user(token, writer, reader))
             while True:
                 data = await reader.read(4096)
                 if not data:
                     continue
-                elif data.decode('utf-8').lower().endswith('close') \
-                        or data.decode('utf-8').lower().endswith('exit'):
-                    print(f'The user {addr} wants to exit', str(addr))
-                    has_been_closed = self.close_connection(writer, addr)
-                    print('The session has been closed?', has_been_closed)
-                    self.return_to_All(f'The user {addr} has left the chat', writer)
-                    continue
-
                 data = data.decode('utf-8')
-                print(f"From user {str(addr)}:", str(data))
-                await self.return_to_All(data, writer)
-                await authentication_task  # Wait for authentication to complete
+                message_parts = data.split("|")
+                chatType = message_parts[0]
+                jwt = message_parts[1]
+                destination = message_parts[2]
+                message = message_parts[3]
+                self.authenticate_user(jwt, writer, reader)
+                if chatType == "general":
+                    print(jwt)
+                    await self.generalChat(message, writer)
+
+                    #comparar si el usuario existe en la db
+
+                    #Proceder a enviar o rebotar el mensaje
+
+                #print(f"From user {str(addr)}:", str(message))
+                
         except Exception as e:
             print("Error:", str(e))
         finally:

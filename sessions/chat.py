@@ -2,7 +2,7 @@ class chatAll:
     def __init__(self, active_sockets):
         self.active_sockets = active_sockets
 
-    async def send_to_all(self, message, sender) -> None:
+    async def generalChat(self, message, sender) -> None:
         if self.active_sockets:
             for client_socket in self.active_sockets:
                 if client_socket != sender:
@@ -14,6 +14,8 @@ class chatAll:
                         print("Error sending message:", str(e))
                         await client_socket.drain()
 
+    async def p2pChat(self, message, sender, destination):
+        pass
 
 
 
