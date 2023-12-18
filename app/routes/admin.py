@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.models.user import User as ModelUser
 from app.schemas.user import User as SchemaUser
 from app.schemas.user import Response as SchemaResponse
+from sessions.server import Server
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.config.db import get_db
@@ -14,6 +15,8 @@ from typing import List
 
 
 admin = APIRouter()
+
+
 
 
 @admin.get("/admin/show_users", response_model=List[SchemaUser], tags=["admin"])

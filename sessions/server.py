@@ -4,7 +4,7 @@ from decouple import config
 from app.utils.auth import get_current_user_by_token
 from jose import JWTError, jwt
 from decouple import config
-
+from sessions.loader import post_message_to_general
 SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
 
@@ -15,10 +15,11 @@ class Server:
         self.port = config('SOCKETS_PORT', cast=int)
         self.active_sockets = []
         self.active_clients_vinculed = {}
-        message_list = []
+        self.client_names = []
 
     async def generalChat(self,username, message, sender):
         chat = chatAll(self.active_sockets, self.active_clients_vinculed)
+        post_message_to_general(username, message)
         await chat.generalChat(username, message, sender)
 
     async def peer_to_peer(self,username, message, sender, destination):
@@ -40,10 +41,14 @@ class Server:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
             self.active_clients_vinculed[username] = {"writer": writer, "reader": reader}
-            print(len(self.active_clients_vinculed))
+            active_clients = self.active_clients_vinculed.keys()
+            self.client_names.append(active_clients)
             return username
         except JWTError as e:
             print("JWT Error:", str(e))
+
+    def return_names(self):
+        return list(self.active_clients_vinculed.keys())
 
     async def handle_client(self, reader, writer):
         addr = writer.get_extra_info('peername')
@@ -61,6 +66,7 @@ class Server:
                 message = message_parts[3]
                 username = self.authenticate_user(jwt, writer, reader)
                 await self.select_chat_type(username, chatType, message, writer, destination)
+
         except Exception as e:
             print("Error:", str(e))
         finally:
