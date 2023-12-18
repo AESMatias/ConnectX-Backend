@@ -47,16 +47,6 @@ class Message(Base):
 
     user = relationship("User", back_populates="messages")
 
-class MessageP2P(Base):
-    __tablename__ = 'messagep2p'
-    id = Column(Integer, primary_key=True, index=True)
-    mensaje = Column(String(255))
-    iduser1 = Column(Integer, ForeignKey('users.id'))
-    iduser2 = Column(Integer, ForeignKey('users.id'))
-    datatime = Column(DateTime)
-
-    user = relationship("User", back_populates="messagep2p")
-
 User.user_account_logs = relationship("UserAccountLogs", back_populates="user")
 User.profile_images = relationship("ProfileImage", back_populates="user")
 
