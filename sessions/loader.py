@@ -20,4 +20,5 @@ def post_message_to_chat():
     db.close()
     return messages
 
-def message_p2p()
+def message_p2p():
+    pass
