@@ -17,6 +17,8 @@ class User(Base):
 
     profile_images = relationship("ProfileImage", back_populates="user")
     user_account_logs = relationship("UserAccountLogs", back_populates="user")
+    messages = relationship("Message", back_populates="user")
+
 
 class ProfileImage(Base):
     __tablename__ = 'profile_images'
@@ -35,6 +37,16 @@ class UserAccountLogs(Base):
     log_at = Column(DateTime)
 
     user = relationship("User", back_populates="user_account_logs")
+
+class Message(Base):
+    __tablename__ = 'messages'
+    id = Column(Integer, primary_key=True, index=True)
+    mensaje = Column(String(255))
+    iduser = Column(Integer, ForeignKey('users.id'))
+    datatime = Column(DateTime)
+
+    user = relationship("User", back_populates="messages")
+
 
 User.user_account_logs = relationship("UserAccountLogs", back_populates="user")
 User.profile_images = relationship("ProfileImage", back_populates="user")

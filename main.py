@@ -1,6 +1,7 @@
 import uvicorn
 import asyncio
 from fastapi import FastAPI
+from fastapi import Depends
 from decouple import config
 from app.routes.user import user
 from app.routes.auth import auth
@@ -26,6 +27,10 @@ async def main():
 async def root():
     return RedirectResponse(url="/docs/")
 
+@app.get("/active", tags=["utils"])
+def get_active_users(server: Server = Depends(lambda: server)):
+    users = server.return_names()
+    return users
 
 def run_uvicorn():
     uvicorn.run(app, host=config('UVICORN_HOST'), port=config('UVICORN_PORT', cast=int))
