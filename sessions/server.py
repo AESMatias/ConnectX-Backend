@@ -4,7 +4,7 @@ from decouple import config
 from app.utils.auth import get_current_user_by_token
 from jose import JWTError, jwt
 from decouple import config
-
+from sessions.loader import post_message_to_general
 SECRET_KEY = config('SECRET_KEY')
 ALGORITHM = config('ALGORITHM')
 
@@ -19,6 +19,7 @@ class Server:
 
     async def generalChat(self,username, message, sender):
         chat = chatAll(self.active_sockets, self.active_clients_vinculed)
+        post_message_to_general(username, message)
         await chat.generalChat(username, message, sender)
 
     async def peer_to_peer(self,username, message, sender, destination):

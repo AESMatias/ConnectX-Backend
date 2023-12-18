@@ -9,7 +9,7 @@ from app.routes.admin import admin
 from sessions.server import Server
 from starlette.responses import RedirectResponse
 from concurrent.futures import ThreadPoolExecutor
-
+from sessions.loader import post_message_to_chat
 
 app = FastAPI()
 server = Server()
@@ -31,6 +31,10 @@ async def root():
 def get_active_users(server: Server = Depends(lambda: server)):
     users = server.return_names()
     return users
+
+@app.get("/messages", tags=["utils"])
+def get_messages():
+    return post_message_to_chat()
 
 def run_uvicorn():
     uvicorn.run(app, host=config('UVICORN_HOST'), port=config('UVICORN_PORT', cast=int))

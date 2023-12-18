@@ -2,26 +2,22 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from app.models.user import Message
 from app.config.db import SessionLocal
-from app.models.user import User
-
-def post_message(user_id, message_text):
+from sqlalchemy import desc
+from app.utils.db import user_from_db
+def post_message_to_general(username, message_text):
     db = SessionLocal()
+    user = user_from_db(username,db)
+    user_id = user.id
+    message = Message(iduser=user_id, mensaje=message_text, datatime=datetime.now())
+    db.add(message)
+    db.commit()
+    db.close()
+    return True
 
-    # Verifica si el usuario existe antes de insertar el mensaje
-    user = db.query(User).filter(User.id == user_id).first()
+def post_message_to_chat():
+    db = SessionLocal()
+    messages = db.query(Message).order_by(desc(Message.datatime)).limit(50).all()
+    db.close()
+    return messages
 
-    if user:
-        message = Message(iduser=user_id, mensaje=message_text, datatime=datetime.now())
-        db.add(message)
-        db.commit()
-        db.close()
-        return True
-    else:
-        # El usuario no existe, puedes manejar esto según tus necesidades
-        db.close()
-        return False
-# Ejemplo de uso
-current_user_id = 1  # Reemplaza con el ID de usuario adecuado
-message_text = "Hola, este es un mensaje de ejemplo."
-post_message(current_user_id, message_text)
-
+def message_p2p()
