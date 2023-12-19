@@ -8,7 +8,7 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(20), unique=True, index=True)
-    password = Column(String(1000))
+    password = Column(String(20))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     admin = Column(Boolean)
@@ -42,7 +42,7 @@ class Message(Base):
     __tablename__ = 'messages'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(255))
-    mensaje = Column(String(255))
+    mensaje = Column(String(1000))
     iduser = Column(Integer, ForeignKey('users.id'))
     datatime = Column(DateTime)
 
