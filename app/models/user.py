@@ -8,7 +8,7 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(20), unique=True, index=True)
-    password = Column(String(255))
+    password = Column(String(1000))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     admin = Column(Boolean)
