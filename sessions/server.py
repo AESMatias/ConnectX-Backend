@@ -15,7 +15,7 @@ class Server:
         self.port = config('SOCKETS_PORT', cast=int)
         self.active_sockets = []
         self.active_clients_vinculed = {}
-        self.client_names = []
+        self.active_clients_vinculed_to_close = {}
 
     async def generalChat(self,username, message, sender):
         chat = chatAll(self.active_sockets, self.active_clients_vinculed)
@@ -41,8 +41,7 @@ class Server:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username: str = payload.get("sub")
             self.active_clients_vinculed[username] = {"writer": writer, "reader": reader}
-            active_clients = self.active_clients_vinculed.keys()
-            self.client_names.append(active_clients)
+            self.active_clients_vinculed_to_close[writer] = {"username": username, "reader": reader}
             return username
         except JWTError as e:
             print("JWT Error:", str(e))
@@ -66,9 +65,12 @@ class Server:
                 message = message_parts[3]
                 username = self.authenticate_user(jwt, writer, reader)
                 await self.select_chat_type(username, chatType, message, writer, destination)
-
         except Exception as e:
             print("Error:", str(e))
+            if writer in self.active_clients_vinculed_to_close:
+                username_to_close = self.active_clients_vinculed_to_close[writer]['username']
+                del self.active_clients_vinculed[username_to_close]
+                print(f"Closing connection for {username_to_close}")
         finally:
             print('finally')
             writer.close()

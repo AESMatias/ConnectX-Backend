@@ -9,7 +9,8 @@ def post_message_to_general(username, message_text):
     db = SessionLocal()
     user = user_from_db(username,db)
     user_id = user.id
-    message = Message(iduser=user_id, mensaje=message_text, datatime=datetime.now())
+    username = user.username
+    message = Message(iduser=user_id,username= username, mensaje=message_text, datatime=datetime.now())
     db.add(message)
     db.commit()
     db.close()
