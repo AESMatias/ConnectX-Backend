@@ -24,6 +24,7 @@ def post_message_to_chat():
     db.close()
     return messages
 
+
 def post_message_to_p2p(username, message_text, username2):
     db = SessionLocal()
     user = user_from_db(username,db)
@@ -34,3 +35,14 @@ def post_message_to_p2p(username, message_text, username2):
     db.commit()
     db.close()
     return True
+
+def post_message_to_chat_p2p(username, username2):
+    db = SessionLocal()
+    resultados = (
+        db.query(Messagep2p)
+        .filter_by(username=username, username2=username2)
+        .order_by(Messagep2p.datatime.desc())  
+        .limit(50)
+        .all()
+    )
+    return resultados

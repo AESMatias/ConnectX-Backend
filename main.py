@@ -11,6 +11,8 @@ from starlette.responses import RedirectResponse
 from concurrent.futures import ThreadPoolExecutor
 from sessions.loader import post_message_to_chat
 from sessions.loader import post_message_to_p2p
+from sessions.loader import post_message_to_chat_p2p
+
 
 app = FastAPI()
 server = Server()
@@ -41,6 +43,9 @@ def get_messages():
 def post_messages_p2p(username: str, message_text: str, username2: str):
     return post_message_to_p2p(username, message_text, username2)
 
+@app.get("/messages/p2p", tags=["utils"])
+def get_messages_p2p(username: str, username2: str):
+    return post_message_to_chat_p2p(username, username2)
 
 def run_uvicorn():
     uvicorn.run(app, host=config('UVICORN_HOST'), port=config('UVICORN_PORT', cast=int))
