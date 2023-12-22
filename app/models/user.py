@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(20), unique=True, index=True)
-    password = Column(String(20))
+    username = Column(String(255), unique=True, index=True)
+    password = Column(String(255))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     admin = Column(Boolean)
@@ -47,6 +47,21 @@ class Message(Base):
     datatime = Column(DateTime)
 
     user = relationship("User", back_populates="messages")
+
+class Messagep2p(Base):
+    __tablename__ = 'messagesp2p'
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255))
+    username2 = Column(String(255))
+    mensaje = Column(String(1000))
+    datatime = Column(DateTime)
+
+class unique_identifier_chat(Base):
+    __tablename__ = 'unique_identifier_chat'
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255))
+    username2 = Column(String(255))
+    unique_identifier = Column(String(255))
 
 User.user_account_logs = relationship("UserAccountLogs", back_populates="user")
 User.profile_images = relationship("ProfileImage", back_populates="user")
