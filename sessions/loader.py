@@ -25,14 +25,16 @@ def post_message_to_chat():
     return messages
 
 
+def organizar_nombres_por_inicial(nombre1, nombre2):
+    nombres = [nombre1, nombre2]
+    nombres_ordenados = sorted(nombres, key=lambda x: ord(x[0]))
+    return nombres_ordenados
+
+
 def post_message_to_p2p(username, message_text, username2):
     db = SessionLocal()
-    user = user_from_db(username,db)
-    user2 = user_from_db(username2,db)
-    user_id = user.id 
-    user_id2 = user2.id
-    username = user.username
-    message = Messagep2p(iduser=user_id,username= user_id,username2=user_id2, mensaje=message_text, datatime=datetime.now())
+    nombres = organizar_nombres_por_inicial(username, username2)
+    message = Messagep2p(username=nombres[0],username2=nombres[1], mensaje=message_text, datatime=datetime.now())
     db.add(message)
     db.commit()
     db.close()
@@ -40,13 +42,10 @@ def post_message_to_p2p(username, message_text, username2):
 
 def post_message_to_chat_p2p(username, username2):
     db = SessionLocal()
-    user = user_from_db(username,db)
-    user2 = user_from_db(username2,db)
-    user_id = user.id 
-    user_id2 = user2.id
+    nombres = organizar_nombres_por_inicial(username, username2)
     resultados = (
         db.query(Messagep2p)
-        .filter_by(username=user_id, username2=user_id2)
+        .filter_by(username=nombres[0], username2=nombres[1])
         .order_by(Messagep2p.datatime.desc())  
         .limit(50)
         .all()
