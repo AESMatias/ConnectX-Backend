@@ -56,6 +56,7 @@ class Messagep2p(Base):
     mensaje = Column(String(1000))
     datatime = Column(DateTime)
 
+
 class unique_identifier_chat(Base):
     __tablename__ = 'unique_identifier_chat'
     id = Column(Integer, primary_key=True, index=True)
