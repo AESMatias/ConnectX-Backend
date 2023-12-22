@@ -28,9 +28,11 @@ def post_message_to_chat():
 def post_message_to_p2p(username, message_text, username2):
     db = SessionLocal()
     user = user_from_db(username,db)
+    user2 = user_from_db(username2,db)
     user_id = user.id 
+    user_id2 = user2.id
     username = user.username
-    message = Messagep2p(iduser=user_id,username= username,username2=username2, mensaje=message_text, datatime=datetime.now())
+    message = Messagep2p(iduser=user_id,username= user_id,username2=user_id2, mensaje=message_text, datatime=datetime.now())
     db.add(message)
     db.commit()
     db.close()
@@ -38,9 +40,13 @@ def post_message_to_p2p(username, message_text, username2):
 
 def post_message_to_chat_p2p(username, username2):
     db = SessionLocal()
+    user = user_from_db(username,db)
+    user2 = user_from_db(username2,db)
+    user_id = user.id 
+    user_id2 = user2.id
     resultados = (
         db.query(Messagep2p)
-        .filter_by(username=username, username2=username2)
+        .filter_by(username=user_id, username2=user_id2)
         .order_by(Messagep2p.datatime.desc())  
         .limit(50)
         .all()

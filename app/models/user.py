@@ -60,6 +60,13 @@ class Messagep2p(Base):
 
     user = relationship("User", back_populates="messagesp2p")
 
+class unique_identifier_chat(Base):
+    __tablename__ = 'unique_identifier_chat'
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(255))
+    username2 = Column(String(255))
+    unique_identifier = Column(String(255))
+
 User.user_account_logs = relationship("UserAccountLogs", back_populates="user")
 User.profile_images = relationship("ProfileImage", back_populates="user")
 
