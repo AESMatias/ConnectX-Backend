@@ -39,7 +39,7 @@ def get_active_users(server: Server = Depends(lambda: server)):
 def get_messages():
     return post_message_to_chat()
 
-@app.post("/messages/p2p", tags=["utils"])
+@app.post("/messages/p2p/message", tags=["utils"])
 def post_messages_p2p(username: str, message_text: str, username2: str):
     return post_message_to_p2p(username, message_text, username2)
 
