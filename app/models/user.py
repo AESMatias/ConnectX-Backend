@@ -18,6 +18,7 @@ class User(Base):
     profile_images = relationship("ProfileImage", back_populates="user")
     user_account_logs = relationship("UserAccountLogs", back_populates="user")
     messages = relationship("Message", back_populates="user")
+    friends = relationship("Friends", back_populates="user")
 
 
 class ProfileImage(Base):
@@ -57,12 +58,16 @@ class Messagep2p(Base):
     datatime = Column(DateTime)
 
 
-class unique_identifier_chat(Base):
-    __tablename__ = 'unique_identifier_chat'
+class Friends(Base):
+    __tablename__ = 'friends'
     id = Column(Integer, primary_key=True, index=True)
+    iduser = Column(Integer, ForeignKey('users.id'))
     username = Column(String(255))
-    username2 = Column(String(255))
-    unique_identifier = Column(String(255))
+    accepted = Column(Boolean)
+    pendient = Column(Boolean)
+    rejected = Column(Boolean)
+
+    user = relationship("User", back_populates="friends")
 
 User.user_account_logs = relationship("UserAccountLogs", back_populates="user")
 User.profile_images = relationship("ProfileImage", back_populates="user")
