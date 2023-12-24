@@ -9,11 +9,7 @@ from sqlalchemy.orm import Session
 
 friend = APIRouter()
 
-def friend_from_db(id: int, db: Session):
-    friends = db.query(Friends).filter(Friends.iduser == id,
-                                       Friends.accepted == True).all()
-    return friends
-
+    
 @friend.post("/friend/request", tags=["friends"])
 def send_friend_request(username: str,
                         db: Session = Depends(get_db),
@@ -60,6 +56,16 @@ def reject_friend_request(username: str,
 @friend.get("/friends", tags=["friends"])
 def get_friends(db: Session = Depends(get_db),
                 current_user: ModelUser = Depends(get_current_user)):
+    id = current_user.id
+    friends = db.query(Friends).filter(Friends.iduser == id,
+                                       Friends.accepted == True).all()
+    return friends
+
+
+@friend.get("/friends/pendient", tags=["friends"])
+def get_friends(db: Session = Depends(get_db),
+                current_user: ModelUser = Depends(get_current_user)):
     user_id = current_user.id
-    friends = friend_from_db(user_id, db)
+    friends = db.query(Friends).filter(Friends.iduser == user_id,
+                                       Friends.pendient == True).all()
     return friends
