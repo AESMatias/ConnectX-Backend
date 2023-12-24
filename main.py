@@ -6,6 +6,7 @@ from decouple import config
 from app.routes.user import user
 from app.routes.auth import auth
 from app.routes.admin import admin
+from sessions.friends import friend
 from sessions.server import Server
 from starlette.responses import RedirectResponse
 from concurrent.futures import ThreadPoolExecutor
@@ -19,6 +20,7 @@ server = Server()
 app.include_router(admin)
 app.include_router(auth)
 app.include_router(user)
+app.include_router(friend)
 
 
 @app.on_event("startup")
