@@ -81,4 +81,7 @@ def get_friends(db: Session = Depends(get_db),
     amigos = []
     for friend in friends:
         amigos.append(user_name_from_db(friend.iduser, db))
-    return amigos
+    user_id = current_user.id
+    status = db.query(Friends).filter(Friends.iduser == user_id,
+                                       Friends.pendient == True).all()
+    return status, amigos
