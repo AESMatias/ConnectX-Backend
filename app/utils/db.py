@@ -16,6 +16,17 @@ def user_from_db(user_name:str, db:Session):
         db.close()
     return user
 
+def user_name_from_db(user_id:int, db:Session):
+    if not db.is_active:
+        with db.begin() as conn:
+            user = conn.query(ModelUser).filter_by(id=user_id).first()
+            conn.close()
+    else:
+        db = SessionLocal()
+        user = db.query(ModelUser).filter_by(id=user_id).first()
+        db.close()
+    return user.username
+
 def post_user_to_db(user, db:Session):
     if not db.is_active:
         with db.begin() as conn:
@@ -43,18 +54,23 @@ def get_profile_image_by_id(current_user_id,db:Session):
         raise HTTPException(status_code=404, detail="Profile picture not found")
     return profile_image
 
-def post_profile_image_by_id(current_user_id, blob_data, data_time, db:Session):
+
+def post_profile_image_by_id(current_user_id, blob_data, data_time,
+                             db: Session):
     if not db.is_active:
         with db.begin() as conn:
-            profile_image = DBProfileImage(user_id=current_user_id, image=blob_data, upload_at=data_time)
+            profile_image = DBProfileImage(user_id=current_user_id,
+                                           image=blob_data,
+                                           upload_at=data_time)
             conn.add(profile_image)
             conn.commit()
             conn.close()
     else:
         db = SessionLocal()
-        profile_image = DBProfileImage(user_id=current_user_id, image=blob_data, upload_at=data_time)
+        profile_image = DBProfileImage(user_id=current_user_id,
+                                       image=blob_data,
+                                       upload_at=data_time)
         db.add(profile_image)
         db.commit()
         db.close()
     return True
-
