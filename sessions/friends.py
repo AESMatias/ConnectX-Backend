@@ -15,8 +15,11 @@ def send_friend_request(username: str,
                         db: Session = Depends(get_db),
                         current_user: ModelUser = Depends(get_current_user)):
     user_id = current_user.id
+    username = username
     friend = db.query(Friends).filter(Friends.iduser == user_id,
                                       Friends.username == username).first()
+    if friend:
+        return "Ya existe una solicitud de amistad"
     friend = Friends(iduser=user_id, username=username, accepted=False ,pendient=True, rejected=False)
     db.add(friend)
     db.commit()
