@@ -19,7 +19,11 @@ def send_friend_request(username: str,
     friend = db.query(Friends).filter(Friends.iduser == user_id,
                                       Friends.username == username).first()
     if friend:
-        return "Ya existe una solicitud de amistad"
+        friend = Friends(iduser=user_id, username=username, accepted=False ,pendient=True, rejected=False)
+        db.add(friend)
+        db.commit()
+        db.refresh(friend)
+        return friend
     friend = Friends(iduser=user_id, username=username, accepted=False ,pendient=True, rejected=False)
     db.add(friend)
     db.commit()
