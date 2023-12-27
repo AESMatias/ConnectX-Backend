@@ -15,23 +15,25 @@ def send_friend_request(username: str,
                         db: Session = Depends(get_db),
                         current_user: ModelUser = Depends(get_current_user)):
     user_id = current_user.id
+    username = username
     friend = db.query(Friends).filter(Friends.iduser == user_id,
                                       Friends.username == username).first()
-    if friend is None:
-        friend = Friends(iduser=user_id, username=username, accepted=False ,pendient=True, rejected=False)
-        db.add(friend)
-        db.commit()
-        db.refresh(friend)
-        return friend
-    else:
-        return {"message": "Ya existe una peticion de amistad"}
+    if friend:
+        return "Ya existe una solicitud de amistad"
+    friend = Friends(iduser=user_id, username=username, accepted=False ,pendient=True, rejected=False)
+    db.add(friend)
+    db.commit()
+    db.refresh(friend)
+    return friend
+
 
 @friend.put("/friend/request/accept", tags=["friends"])
-def accept_friend_request(username: str,
+def accept(username: str,
                           db: Session = Depends(get_db),
                           current_user: ModelUser = Depends(get_current_user)):
     userid = user_from_db(username, db).id
     username = current_user.username
+    #filtrar solicitud por id, iduser y username
     friend = db.query(Friends).filter(Friends.iduser == userid,
                                       Friends.username == username).first()
     friend.accepted = True
@@ -77,11 +79,13 @@ def get_friends(db: Session = Depends(get_db),
     user_name = current_user.username
     friends = db.query(Friends).filter(Friends.username == user_name,
                                        Friends.pendient == True).all()
-    #filtrar estas peticiones por el id del usuario que le manda y mandar el nombre asociado al id
     amigos = []
     for friend in friends:
-        amigos.append(user_name_from_db(friend.iduser, db))
-    user_id = current_user.id
-    status = db.query(Friends).filter(Friends.iduser == user_id,
-                                       Friends.pendient == True).all()
-    return status, amigos
+        amigo_dict = {
+            'username': user_name_from_db(friend.iduser, db),
+            'accepted': friend.accepted,
+            'pendient': friend.pendient,
+            'rejected': friend.rejected
+        }
+        amigos.append(amigo_dict)
+    return amigos
